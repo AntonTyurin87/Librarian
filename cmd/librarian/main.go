@@ -15,7 +15,7 @@ const (
 	port = "0.0.0.0:50052"
 )
 
-func main() {
+func main() { //TODO камент...
 
 	// gRPC сервис подключаем
 	lis, err := net.Listen("tcp", port)
