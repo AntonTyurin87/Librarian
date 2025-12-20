@@ -1,35 +1,30 @@
 package main
 
 import (
-	"log"
-	"net"
-	"time"
-
-	lib "github.com/AntonTyurin87/Recon_Com_protoc/gen/go/librarian"
-	"google.golang.org/grpc"
-
 	"Librarian/internal/grpc/librarian"
+	"Librarian/internal/yandex"
+	"Librarian/internal/yandex/sqlite"
+	"fmt"
+	_ "modernc.org/sqlite"
+	"os"
 )
 
-const (
-	port = "0.0.0.0:50052"
-)
+func main() {
+	// Получение яндекс клиента
+	yandex.YandexClient = yandex.NewYandexDiskClient(os.Getenv("YANDEX_TOKEN"))
+	fmt.Println("Яндекс клиент получен")
 
-func main() { //TODO камент...
+	// Получи файл базы данных яндекс диска
+	yandex.GetLibrarianDB(yandex.YandexClient)
+	fmt.Println("Яндекс клиент получен")
+
+	// Подключились к БД указателей на источники яндекс диска
+	db, err := sqlite.InitDB()
+	if err != nil {
+		fmt.Println("Подключиться к БД указателей с яндекс диска не удалось - ", err)
+	}
+	sqlite.LibrarianStorage = sqlite.NewStorage(db)
 
 	// gRPC сервис подключаем
-	lis, err := net.Listen("tcp", port)
-	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
-	}
-
-	s := grpc.NewServer(grpc.ConnectionTimeout(10 * time.Second))
-	lib.RegisterLibrarianServer(s, &librarian.Server{})
-
-	log.Printf("Service A (TextProcessor) listening on %s", port)
-
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
-	///////////////////////////////////////////////////
+	librarian.InitGRPC()
 }

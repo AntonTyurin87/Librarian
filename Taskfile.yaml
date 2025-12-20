@@ -1,0 +1,103 @@
+# See: https://taskfile.dev/api/
+
+version: "3"
+
+env:
+  MIGRATIONS_DIR: migrations
+  DB_PATH: ./RC_librarian.db
+  GOOSE_DB_TYPE: sqlite3
+
+tasks:
+  run:
+    desc: "Запуск для отладки"
+    env:
+      LIBRARIAN_PORT: '0.0.0.0:50052'
+      YANDEX_TOKEN: 'y0__xD-5p6GAhjblgMg19PL4RSMPdmJcFPz1TX5UgtL0SDttD5EoA'
+    cmds:
+      - go run cmd/librarian/main.go
+
+
+  # ========== MIGRATION COMMANDS ==========
+  migration:
+    desc: Создать новую миграцию
+    interactive: true
+    cmds:
+      - |
+        read -p "Введите название миграции: " name
+        goose -dir={{.MIGRATIONS_DIR}} create "$name" sql
+
+  migrate:up:
+    desc: Применить все миграции
+    cmds:
+      - goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} up
+
+  migrate:up-by-one:
+    desc: Применить следующую миграцию
+    cmds:
+      - goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} up-by-one
+
+  migrate:down:
+    desc: Откатить последнюю миграцию
+    cmds:
+      - goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} down
+
+  migrate:down-to:
+    desc: Откатить миграции до указанной версии
+    cmds:
+      - |
+        if [ -z "{{.CLI_ARGS}}" ]; then
+          echo "Использование: task migrate:down-to -- 20240101000000"
+          exit 1
+        fi
+        goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} down-to {{.CLI_ARGS}}
+
+  migrate:status:
+    desc: Показать статус миграций
+    cmds:
+      - goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} status
+
+  migrate:redo:
+    desc: Перезапустить последнюю миграцию
+    cmds:
+      - goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} redo
+
+  migrate:fix:
+    desc: Исправить версию миграции
+    cmds:
+      - goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} fix
+
+  migrate:version:
+    desc: Установить конкретную версию миграции
+    cmds:
+      - |
+        if [ -z "{{.CLI_ARGS}}" ]; then
+          echo "Использование: task migrate:version -- 20240101000000"
+          exit 1
+        fi
+        goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} version {{.CLI_ARGS}}
+
+  migrate:new:
+    desc: Создать и применить миграцию
+    interactive: true
+    cmds:
+      - |
+        read -p "Введите название миграции: " name
+        goose -dir={{.MIGRATIONS_DIR}} create "$name" sql
+        goose -dir={{.MIGRATIONS_DIR}} {{.GOOSE_DB_TYPE}} {{.DB_PATH}} up
+
+  # ========== UTILITY ==========
+  list-tables:
+    desc: Показать все таблицы в базе данных
+    cmds:
+      - |
+        echo ".tables" | sqlite3 {{.DB_PATH}}
+
+  describe-table:
+    desc: Описать структуру таблицы
+    cmds:
+      - |
+        if [ -z "{{.CLI_ARGS}}" ]; then
+          echo "Использование: task describe-table -- users"
+          exit 1
+        fi
+        echo ".schema {{.CLI_ARGS}}" | sqlite3 {{.DB_PATH}}
