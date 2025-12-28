@@ -121,20 +121,20 @@ func (p *Photo) Entity() *entity.Photo {
 	}
 
 	return &entity.Photo{
-		ID:          p.GetID(),
-		NameRu:      p.GetNameRu(),
-		NameNative:  p.GetNameNative(),
-		AuthorRu:    p.GetAuthorRu(),
-		Year:        p.GetYear(),
-		Regions:     p.GetRegions(),
-		TimePeriods: p.GetTimePeriods(),
-		Description: p.GetDescription(),
-		FileFormat:  p.GetFileFormat(),
+		ID:              p.GetID(),
+		GroupID:         p.GetGroupID(),
+		NameRu:          p.GetNameRu(),
+		NameNative:      p.GetNameNative(),
+		FilmingLocation: p.GetFilmingLocation(),
+		Regions:         p.GetRegions(),
+		TimePeriods:     p.GetTimePeriods(),
+		Description:     p.GetDescription(),
+		FileFormat:      p.GetFileFormat(),
 	}
 }
 
 // Photos ...
-type Photos []*Photos
+type Photos []*Photo
 
 // Entity ...
 func (p Photos) Entity() []*entity.Photo { return ToEntitySlice[[]*entity.Photo](p) }
