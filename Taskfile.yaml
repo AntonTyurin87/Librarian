@@ -2,6 +2,9 @@
 
 version: "3"
 
+vars:
+  DEP_NAME: github.com/AntonTyurin87/Recon_Com_protoc
+
 env:
   MIGRATIONS_DIR: migrations
   DB_PATH: ./RC_librarian.db
@@ -15,6 +18,30 @@ tasks:
       YANDEX_TOKEN: 'y0__xD-5p6GAhjblgMg19PL4RSMPdmJcFPz1TX5UgtL0SDttD5EoA'
     cmds:
       - go run cmd/librarian/main.go
+
+
+  update-recon:
+    desc: Обновить Recon_Com_protoc до последней версии
+    cmds:
+      - |
+        echo "🔄 Обновление github.com/AntonTyurin87/Recon_Com_protoc..."
+        
+        # Получаем текущую версию
+        OLD_VERSION=$(go list -m -f '{{.Version}}' github.com/AntonTyurin87/Recon_Com_protoc 2>/dev/null || echo "не установлена")
+        echo "Текущая версия: $OLD_VERSION"
+        
+        # Обновляем
+        go get -u github.com/AntonTyurin87/Recon_Com_protoc
+        go mod tidy
+        
+        # Получаем новую версию
+        NEW_VERSION=$(go list -m -f '{{.Version}}' github.com/AntonTyurin87/Recon_Com_protoc)
+        
+        echo "✅ Обновлено: $OLD_VERSION → $NEW_VERSION"
+        
+        # Проверяем компиляцию
+        echo "🔧 Проверка компиляции..."
+        go build ./... && echo "✅ Код компилируется"
 
 
   # ========== MIGRATION COMMANDS ==========

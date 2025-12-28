@@ -5,10 +5,6 @@ import (
 	"time"
 )
 
-var YandexClient *YandexDiskClient
-
-const YandexToken = "y0__xD-5p6GAhjblgMg19PL4RSMPdmJcFPz1TX5UgtL0SDttD5EoA"
-
 // YandexDiskClient представляет клиент для работы с Яндекс Диском
 type YandexDiskClient struct {
 	OAuthToken string
@@ -17,7 +13,7 @@ type YandexDiskClient struct {
 }
 
 // NewYandexDiskClient создает новый клиент Яндекс Диска
-func NewYandexDiskClient(token string) *YandexDiskClient {
+func NewYandexDiskClient(token string) Interface {
 	return &YandexDiskClient{
 		OAuthToken: token,
 		BaseURL:    "https://cloud-api.yandex.net/v1/disk",
