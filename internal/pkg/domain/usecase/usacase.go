@@ -13,9 +13,10 @@ type usecase struct {
 	yandexClient yandex.Interface
 }
 
-// NewUsacase
+// NewUsacase ...
 func NewUsacase(
 	presenter presenter.Interface,
+
 	repository repository.Repository,
 	yandexClient yandex.Interface,
 ) *usecase {

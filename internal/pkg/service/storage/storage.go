@@ -13,10 +13,13 @@ type Storage struct {
 	DB *sql.DB
 }
 
+//
 //	func (s Storage) Exec(ctx context.Context, sql string, args ...interface{}) (*sql.Rows, error) {
 //		//TODO implement me
 //		panic("implement me")
 //	}
+
+// Query ...
 func (s Storage) Query(ctx context.Context, sql string, args ...interface{}) (*sql.Rows, error) {
 	return s.DB.QueryContext(ctx, sql, args...)
 }

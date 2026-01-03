@@ -5,16 +5,13 @@ import (
 )
 
 type repository struct {
-	//ex      executor
 	storage storage.Storage
 }
 
 func NewRepository(
-	//ex executor,
 	storage storage.Storage,
 ) Repository {
 	return &repository{
-		//ex:      ex,
 		storage: storage,
 	}
 }

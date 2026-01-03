@@ -3,6 +3,7 @@ package librarian
 import (
 	"Librarian/internal/pkg/domain/presenter"
 	"Librarian/internal/pkg/domain/usecase"
+	"Librarian/internal/pkg/service/files_worker"
 	"context"
 	"fmt"
 
@@ -13,18 +14,21 @@ type Server struct {
 	lib.UnimplementedLibrarianServer
 	presenter presenter.Interface
 
-	usacase usecase.Interface
+	usacase    usecase.Interface
+	fileWorker files_worker.FileWorker
 }
 
 func NewServer(
 	presenter presenter.Interface,
 
 	usacase usecase.Interface,
+	fileWorker files_worker.FileWorker,
 ) *Server {
 	return &Server{
 		presenter: presenter,
 
-		usacase: usacase,
+		usacase:    usacase,
+		fileWorker: fileWorker,
 	}
 }
 

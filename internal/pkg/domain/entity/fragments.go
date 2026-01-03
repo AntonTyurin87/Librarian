@@ -1,15 +1,15 @@
 package entity
 
 type Fragment struct {
-	ID          int32  `json:"id"`
-	NameRu      string `json:"name_ru"`
-	NameNative  string `json:"name_native"`
-	AuthorRu    string `json:"author_ru"`
-	Year        int32  `json:"year"`
-	Regions     string `json:"regions"`
-	TimePeriods string `json:"time_periods"`
-	Description string `json:"description"`
-	FileFormat  string `json:"file_format"`
+	ID          int32      `json:"id"`
+	NameRu      string     `json:"name_ru"`
+	NameNative  string     `json:"name_native"`
+	AuthorRu    string     `json:"author_ru"`
+	Year        int32      `json:"year"`
+	Regions     []string   `json:"regions"`
+	TimePeriods []string   `json:"time_periods"`
+	Description string     `json:"description"`
+	Format      FileFormat `json:"format"`
 }
 
 // GetID возвращает ID книги
@@ -53,17 +53,17 @@ func (f *Fragment) GetYear() int32 {
 }
 
 // GetRegions возвращает регионы
-func (f *Fragment) GetRegions() string {
+func (f *Fragment) GetRegions() []string {
 	if f == nil {
-		return ""
+		return nil
 	}
 	return f.Regions
 }
 
 // GetTimePeriods возвращает временные периоды
-func (f *Fragment) GetTimePeriods() string {
+func (f *Fragment) GetTimePeriods() []string {
 	if f == nil {
-		return ""
+		return nil
 	}
 	return f.TimePeriods
 }
@@ -77,9 +77,9 @@ func (f *Fragment) GetDescription() string {
 }
 
 // GetFileFormat возвращает формат файла
-func (f *Fragment) GetFileFormat() string {
+func (f *Fragment) GetFileFormat() FileFormat {
 	if f == nil {
-		return ""
+		return FileFormat_UNKNOWN
 	}
-	return f.FileFormat
+	return f.Format
 }

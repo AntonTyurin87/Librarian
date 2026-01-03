@@ -2,15 +2,15 @@ package entity
 
 // Article ...
 type Article struct {
-	ID          int32  `json:"id"`
-	NameRu      string `json:"name_ru"`
-	NameNative  string `json:"name_native"`
-	AuthorRu    string `json:"author_ru"`
-	Year        int32  `json:"year"`
-	Regions     string `json:"regions"`
-	TimePeriods string `json:"time_periods"`
-	Description string `json:"description"`
-	FileFormat  string `json:"file_format"`
+	ID          int32      `json:"id"`
+	NameRu      string     `json:"name_ru"`
+	NameNative  string     `json:"name_native"`
+	AuthorRu    string     `json:"author_ru"`
+	Year        int32      `json:"year"`
+	Regions     []string   `json:"regions"`
+	TimePeriods []string   `json:"time_periods"`
+	Description string     `json:"description"`
+	Format      FileFormat `json:"format"`
 }
 
 // GetID возвращает ID книги
@@ -54,17 +54,17 @@ func (a *Article) GetYear() int32 {
 }
 
 // GetRegions возвращает регионы
-func (a *Article) GetRegions() string {
+func (a *Article) GetRegions() []string {
 	if a == nil {
-		return ""
+		return nil
 	}
 	return a.Regions
 }
 
 // GetTimePeriods возвращает временные периоды
-func (a *Article) GetTimePeriods() string {
+func (a *Article) GetTimePeriods() []string {
 	if a == nil {
-		return ""
+		return nil
 	}
 	return a.TimePeriods
 }
@@ -77,10 +77,10 @@ func (a *Article) GetDescription() string {
 	return a.Description
 }
 
-// GetFileFormat возвращает формат файла
-func (a *Article) GetFileFormat() string {
+// GetFormat возвращает формат файла
+func (a *Article) GetFormat() FileFormat {
 	if a == nil {
-		return ""
+		return FileFormat_UNKNOWN
 	}
-	return a.FileFormat
+	return a.Format
 }

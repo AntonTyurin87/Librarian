@@ -13,7 +13,7 @@ const (
 	ArticlesColumnRegions     = "regions"
 	ArticlesColumnTimePeriods = "time_periods"
 	ArticlesColumnDescription = "description"
-	ArticlesColumnFileFormat  = "file_format"
+	ArticlesColumnFormat      = "format"
 )
 
 // ArticlesColumns ...
@@ -26,20 +26,20 @@ var ArticlesColumns = []string{
 	ArticlesColumnRegions,
 	ArticlesColumnTimePeriods,
 	ArticlesColumnDescription,
-	ArticlesColumnFileFormat,
+	ArticlesColumnFormat,
 }
 
 // Article ...
 type Article struct {
-	ID          int32  `db:"id"`
-	NameRu      string `db:"name_ru"`
-	NameNative  string `db:"name_native"`
-	AuthorRu    string `db:"author_ru"`
-	Year        int32  `db:"year"`
-	Regions     string `db:"regions"`
-	TimePeriods string `db:"time_periods"`
-	Description string `db:"description"`
-	FileFormat  string `db:"file_format"`
+	ID          int32    `db:"id"`
+	NameRu      string   `db:"name_ru"`
+	NameNative  string   `db:"name_native"`
+	AuthorRu    string   `db:"author_ru"`
+	Year        int32    `db:"year"`
+	Regions     []string `db:"regions"`
+	TimePeriods []string `db:"time_periods"`
+	Description string   `db:"description"`
+	Format      int32    `db:"format"`
 }
 
 // GetID возвращает ID книги
@@ -83,17 +83,17 @@ func (a *Article) GetYear() int32 {
 }
 
 // GetRegions возвращает регионы
-func (a *Article) GetRegions() string {
+func (a *Article) GetRegions() []string {
 	if a == nil {
-		return ""
+		return nil
 	}
 	return a.Regions
 }
 
 // GetTimePeriods возвращает временные периоды
-func (a *Article) GetTimePeriods() string {
+func (a *Article) GetTimePeriods() []string {
 	if a == nil {
-		return ""
+		return nil
 	}
 	return a.TimePeriods
 }
@@ -106,12 +106,9 @@ func (a *Article) GetDescription() string {
 	return a.Description
 }
 
-// GetFileFormat возвращает формат файла
-func (a *Article) GetFileFormat() string {
-	if a == nil {
-		return ""
-	}
-	return a.FileFormat
+// GetFormat возвращает формат файла
+func (a *Article) GetFormat() int32 {
+	return a.Format
 }
 
 // Entity ...
@@ -129,7 +126,7 @@ func (a *Article) Entity() *entity.Article {
 		Regions:     a.GetRegions(),
 		TimePeriods: a.GetTimePeriods(),
 		Description: a.GetDescription(),
-		FileFormat:  a.GetFileFormat(),
+		Format:      entity.FileFormat(a.GetFormat()), //TODO проверить правильность работы!
 	}
 }
 
@@ -138,3 +135,21 @@ type Articles []*Article
 
 // Entity ...
 func (a Articles) Entity() []*entity.Article { return ToEntitySlice[[]*entity.Article](a) }
+
+// ArticleDtoFromEntity ...
+func ArticleDtoFromEntity(e *entity.Article) *Article {
+	if e == nil {
+		return nil
+	}
+	return &Article{
+		ID:          e.ID,
+		NameRu:      e.NameRu,
+		NameNative:  e.NameNative,
+		AuthorRu:    e.AuthorRu,
+		Year:        e.Year,
+		Regions:     e.Regions,
+		TimePeriods: e.TimePeriods,
+		Description: e.Description,
+		Format:      int32(e.Format),
+	}
+}

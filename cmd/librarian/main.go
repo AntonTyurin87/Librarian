@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"sync"
 	"time"
 
 	lib "github.com/AntonTyurin87/Recon_Com_protoc/gen/go/librarian"
@@ -13,12 +14,11 @@ import (
 	"Librarian/internal/app/librarian"
 	"Librarian/internal/pkg/domain/presenter"
 	"Librarian/internal/pkg/domain/usecase"
+	"Librarian/internal/pkg/service/files_worker"
 	"Librarian/internal/pkg/service/repository"
 	"Librarian/internal/pkg/service/storage"
 	"Librarian/internal/pkg/service/yandex"
-)
 
-import (
 	_ "modernc.org/sqlite"
 )
 
@@ -41,7 +41,14 @@ func main() {
 	storageImpl := storage.NewStorage(db)
 
 	presenterImpl := presenter.New()
+
 	repositoryImpl := repository.NewRepository(storageImpl)
+
+	chunkSize := int64(1024 * 1024)
+	activeUploads := make(map[string]*files_worker.UploadSession, 10)
+	mu := sync.RWMutex{}
+
+	fileWorkerImpl := files_worker.NewFileWorker(presenterImpl, chunkSize, activeUploads, mu)
 
 	usacase := usecase.NewUsacase(presenterImpl, repositoryImpl, yandexClient)
 
@@ -49,6 +56,7 @@ func main() {
 	server := librarian.NewServer(
 		presenterImpl,
 		usacase,
+		fileWorkerImpl,
 	)
 
 	// gRPC сервис подключаем

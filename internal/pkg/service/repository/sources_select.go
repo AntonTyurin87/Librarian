@@ -13,6 +13,7 @@ import (
 // SelectSources ...
 func (r *repository) SelectSources(ctx context.Context, q sources.Select) ([]*entity.Source, error) {
 	var res dto.Sources
+
 	if err := Selectx(ctx, r.storage, &res, getSelectSourcesQuery(q)); err != nil {
 		return nil, fmt.Errorf("selectx(ctx, r.storage, &res, getSelectSourcesQuery(q)): %w", err)
 	}
@@ -38,6 +39,9 @@ func getSelectSourcesQuery(query sources.Select) sq.SelectBuilder {
 	}
 	if len(query.Address) > 0 {
 		where[dto.SourcesColumnAddress] = query.Address
+	}
+	if len(query.TimePeriods) > 0 {
+		where[dto.SourcesColumnTimePeriods] = query.TimePeriods
 	}
 
 	//по полю CreateAt не ищем

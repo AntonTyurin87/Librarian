@@ -2,15 +2,15 @@ package entity
 
 // Photo ...
 type Photo struct {
-	ID              int32  `json:"id"`
-	GroupID         int32  `json:"group_id"`
-	NameRu          string `json:"name_ru"`
-	NameNative      string `json:"name_native"`
-	FilmingLocation string `json:"filming_location"`
-	Regions         string `json:"regions"`
-	TimePeriods     string `json:"time_periods"`
-	Description     string `json:"description"`
-	FileFormat      string `json:"file_format"`
+	ID              int32      `json:"id"`
+	GroupID         int32      `json:"group_id"`
+	NameRu          string     `json:"name_ru"`
+	NameNative      string     `json:"name_native"`
+	FilmingLocation string     `json:"filming_location"`
+	Regions         []string   `json:"regions"`
+	TimePeriods     []string   `json:"time_periods"`
+	Description     string     `json:"description"`
+	Format          FileFormat `json:"format"`
 }
 
 // GetID возвращает ID фотографии
@@ -54,17 +54,17 @@ func (p *Photo) GetFilmingLocation() string {
 }
 
 // GetRegions возвращает регионы
-func (p *Photo) GetRegions() string {
+func (p *Photo) GetRegions() []string {
 	if p == nil {
-		return ""
+		return nil
 	}
 	return p.Regions
 }
 
 // GetTimePeriods возвращает временные периоды
-func (p *Photo) GetTimePeriods() string {
+func (p *Photo) GetTimePeriods() []string {
 	if p == nil {
-		return ""
+		return nil
 	}
 	return p.TimePeriods
 }
@@ -77,10 +77,10 @@ func (p *Photo) GetDescription() string {
 	return p.Description
 }
 
-// GetFileFormat возвращает формат файла
-func (p *Photo) GetFileFormat() string {
+// GetFormat возвращает формат файла
+func (p *Photo) GetFormat() FileFormat {
 	if p == nil {
-		return ""
+		return FileFormat_UNKNOWN
 	}
-	return p.FileFormat
+	return p.Format
 }

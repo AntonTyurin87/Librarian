@@ -4,9 +4,10 @@ import "time"
 
 // Select ...
 type Select struct {
-	IDs       []int32
-	Types     []string
-	ObjectIDs []int32
-	Address   []string
-	CreatedAt []time.Time
+	IDs         []int32
+	Types       []int32
+	ObjectIDs   []int32
+	Address     []string
+	CreatedAt   []time.Time
+	TimePeriods []string
 }

@@ -16,11 +16,13 @@ func (g *GetInfoForDownloadRequest) GetSources() []*Source {
 }
 
 type Source struct {
-	ID        int32     `json:"id"`
-	Type      string    `json:"type"`
-	ObjectID  int32     `json:"object_id"`
-	Address   string    `json:"address"`
-	CreatedAt time.Time `json:"created_at"`
+	ID           int32      `json:"id"`
+	Type         SourceType `json:"type"`
+	ObjectID     int32      `json:"object_id"`
+	Address      string     `json:"address"`
+	CreatedAt    time.Time  `json:"created_at"`
+	Availability bool       `json:"availability"`
+	TimePeriods  []string   `json:"time_periods"`
 }
 
 // GetID возвращает ID источника
@@ -32,9 +34,9 @@ func (s *Source) GetID() int32 {
 }
 
 // GetType возвращает тип источника
-func (s *Source) GetType() string {
+func (s *Source) GetType() SourceType {
 	if s == nil {
-		return ""
+		return SourceType_UNKNOWN
 	}
 	return s.Type
 }
@@ -61,6 +63,22 @@ func (s *Source) GetCreatedAt() time.Time {
 		return time.Time{}
 	}
 	return s.CreatedAt
+}
+
+// GetAvailability признак доступности
+func (s *Source) GetAvailability() bool {
+	if s == nil {
+		return false
+	}
+	return s.Availability
+}
+
+// GetTimePeriods ...
+func (s *Source) GetTimePeriods() []string {
+	if s == nil {
+		return nil
+	}
+	return s.TimePeriods
 }
 
 // GetInfoForDownloadResponse ...

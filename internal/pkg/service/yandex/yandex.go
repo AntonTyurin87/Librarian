@@ -5,6 +5,15 @@ import (
 	"time"
 )
 
+const (
+	SharedFolder string = "ReconCom"
+
+	BooksFolder     string = "Books"
+	ArticlesFolder  string = "Articles"
+	FragmentsFolder string = "Friends"
+	PhotosFolder    string = "Photos"
+)
+
 // YandexDiskClient представляет клиент для работы с Яндекс Диском
 type YandexDiskClient struct {
 	OAuthToken string

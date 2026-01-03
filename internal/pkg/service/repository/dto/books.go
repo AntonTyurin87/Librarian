@@ -13,7 +13,7 @@ const (
 	BooksColumnRegions     = "regions"
 	BooksColumnTimePeriods = "time_periods"
 	BooksColumnDescription = "description"
-	BooksColumnFileFormat  = "file_format"
+	BooksColumnFormat      = "format"
 )
 
 // BooksColumns ...
@@ -26,20 +26,20 @@ var BooksColumns = []string{
 	BooksColumnRegions,
 	BooksColumnTimePeriods,
 	BooksColumnDescription,
-	BooksColumnFileFormat,
+	BooksColumnFormat,
 }
 
 // Book ...
 type Book struct {
-	ID          int32  `db:"id"`
-	NameRu      string `db:"name_ru"`
-	NameNative  string `db:"name_native"`
-	AuthorRu    string `db:"author_ru"`
-	Year        int32  `db:"year"`
-	Regions     string `db:"regions"`
-	TimePeriods string `db:"time_periods"`
-	Description string `db:"description"`
-	FileFormat  string `db:"file_format"`
+	ID          int32    `db:"id"`
+	NameRu      string   `db:"name_ru"`
+	NameNative  string   `db:"name_native"`
+	AuthorRu    string   `db:"author_ru"`
+	Year        int32    `db:"year"`
+	Regions     []string `db:"regions"`
+	TimePeriods []string `db:"time_periods"`
+	Description string   `db:"description"`
+	Format      int32    `db:"format"`
 }
 
 // GetID возвращает ID книги
@@ -83,17 +83,17 @@ func (b *Book) GetYear() int32 {
 }
 
 // GetRegions возвращает регионы
-func (b *Book) GetRegions() string {
+func (b *Book) GetRegions() []string {
 	if b == nil {
-		return ""
+		return nil
 	}
 	return b.Regions
 }
 
 // GetTimePeriods возвращает временные периоды
-func (b *Book) GetTimePeriods() string {
+func (b *Book) GetTimePeriods() []string {
 	if b == nil {
-		return ""
+		return nil
 	}
 	return b.TimePeriods
 }
@@ -106,12 +106,9 @@ func (b *Book) GetDescription() string {
 	return b.Description
 }
 
-// GetFileFormat возвращает формат файла
-func (b *Book) GetFileFormat() string {
-	if b == nil {
-		return ""
-	}
-	return b.FileFormat
+// GetFormat возвращает формат файла
+func (b *Book) GetFormat() int32 {
+	return b.Format
 }
 
 // Entity ...
@@ -129,7 +126,7 @@ func (b *Book) Entity() *entity.Book {
 		Regions:     b.GetRegions(),
 		TimePeriods: b.GetTimePeriods(),
 		Description: b.GetDescription(),
-		FileFormat:  b.GetFileFormat(),
+		Format:      entity.FileFormat(b.GetFormat()),
 	}
 }
 
@@ -138,3 +135,21 @@ type Books []*Book
 
 // Entity ...
 func (b Books) Entity() []*entity.Book { return ToEntitySlice[[]*entity.Book](b) }
+
+// BookDtoFromEntity ...
+func BookDtoFromEntity(e *entity.Book) *Book {
+	if e == nil {
+		return nil
+	}
+	return &Book{
+		ID:          e.ID,
+		NameRu:      e.NameRu,
+		NameNative:  e.NameNative,
+		AuthorRu:    e.AuthorRu,
+		Year:        e.Year,
+		Regions:     e.Regions,
+		TimePeriods: e.TimePeriods,
+		Description: e.Description,
+		Format:      int32(e.Format),
+	}
+}

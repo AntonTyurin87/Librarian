@@ -11,6 +11,11 @@ github.com/AntonTyurin87/Recon_Com_protoc v0.1.9 h1:QF+hhl0RRRPSnD+v8XonZXGRnAQ2
 github.com/AntonTyurin87/Recon_Com_protoc v0.1.9/go.mod h1:aOu4kXnyUuuatk6aUUdAOBLzNeYoTCF79jkJdBjEvq8=
 github.com/AntonTyurin87/Recon_Com_protoc v0.1.10 h1:39T7SLHOaJm1VDtc6pvODer9UXt4iJbbBuTOvhP48lQ=
 github.com/AntonTyurin87/Recon_Com_protoc v0.1.10/go.mod h1:aOu4kXnyUuuatk6aUUdAOBLzNeYoTCF79jkJdBjEvq8=
+github.com/AntonTyurin87/Recon_Com_protoc v0.1.11/go.mod h1:aOu4kXnyUuuatk6aUUdAOBLzNeYoTCF79jkJdBjEvq8=
+github.com/AntonTyurin87/Recon_Com_protoc v0.1.12/go.mod h1:aOu4kXnyUuuatk6aUUdAOBLzNeYoTCF79jkJdBjEvq8=
+github.com/AntonTyurin87/Recon_Com_protoc v0.1.13/go.mod h1:aOu4kXnyUuuatk6aUUdAOBLzNeYoTCF79jkJdBjEvq8=
+github.com/AntonTyurin87/Recon_Com_protoc v0.1.15 h1:bgPJ3EHxZrXlo0dzWkFU0QQxyZvIprkir6KT3jW66Eo=
+github.com/AntonTyurin87/Recon_Com_protoc v0.1.15/go.mod h1:aOu4kXnyUuuatk6aUUdAOBLzNeYoTCF79jkJdBjEvq8=
 github.com/Masterminds/squirrel v1.5.4 h1:uUcX/aBc8O7Fg9kaISIUsHXdKuqehiXAMQTYX8afzqM=
 github.com/Masterminds/squirrel v1.5.4/go.mod h1:NNaOrjSoIDfDA40n7sr2tPNZRfjzjA400rg+riTZj10=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

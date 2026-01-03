@@ -13,7 +13,7 @@ const (
 	FragmentsColumnRegions     = "regions"
 	FragmentsColumnTimePeriods = "time_periods"
 	FragmentsColumnDescription = "description"
-	FragmentsColumnFileFormat  = "file_format"
+	FragmentsColumnFormat      = "format"
 )
 
 // FragmentsColumns ...
@@ -26,20 +26,20 @@ var FragmentsColumns = []string{
 	FragmentsColumnRegions,
 	FragmentsColumnTimePeriods,
 	FragmentsColumnDescription,
-	FragmentsColumnFileFormat,
+	FragmentsColumnFormat,
 }
 
 // Fragment ...
 type Fragment struct {
-	ID          int32  `db:"id"`
-	NameRu      string `db:"name_ru"`
-	NameNative  string `db:"name_native"`
-	AuthorRu    string `db:"author_ru"`
-	Year        int32  `db:"year"`
-	Regions     string `db:"regions"`
-	TimePeriods string `db:"time_periods"`
-	Description string `db:"description"`
-	FileFormat  string `db:"file_format"`
+	ID          int32    `db:"id"`
+	NameRu      string   `db:"name_ru"`
+	NameNative  string   `db:"name_native"`
+	AuthorRu    string   `db:"author_ru"`
+	Year        int32    `db:"year"`
+	Regions     []string `db:"regions"`
+	TimePeriods []string `db:"time_periods"`
+	Description string   `db:"description"`
+	Format      int32    `db:"format"`
 }
 
 // GetID возвращает ID книги
@@ -83,17 +83,17 @@ func (f *Fragment) GetYear() int32 {
 }
 
 // GetRegions возвращает регионы
-func (f *Fragment) GetRegions() string {
+func (f *Fragment) GetRegions() []string {
 	if f == nil {
-		return ""
+		return nil
 	}
 	return f.Regions
 }
 
 // GetTimePeriods возвращает временные периоды
-func (f *Fragment) GetTimePeriods() string {
+func (f *Fragment) GetTimePeriods() []string {
 	if f == nil {
-		return ""
+		return nil
 	}
 	return f.TimePeriods
 }
@@ -106,12 +106,9 @@ func (f *Fragment) GetDescription() string {
 	return f.Description
 }
 
-// GetFileFormat возвращает формат файла
-func (f *Fragment) GetFileFormat() string {
-	if f == nil {
-		return ""
-	}
-	return f.FileFormat
+// GetFormat возвращает формат файла
+func (f *Fragment) GetFormat() int32 {
+	return f.Format
 }
 
 // Entity ...
@@ -129,7 +126,7 @@ func (f *Fragment) Entity() *entity.Fragment {
 		Regions:     f.GetRegions(),
 		TimePeriods: f.GetTimePeriods(),
 		Description: f.GetDescription(),
-		FileFormat:  f.GetFileFormat(),
+		Format:      entity.FileFormat(f.GetFormat()),
 	}
 }
 
@@ -138,3 +135,21 @@ type Fragments []*Fragment
 
 // Entity ...
 func (f Fragments) Entity() []*entity.Fragment { return ToEntitySlice[[]*entity.Fragment](f) }
+
+// FragmentDtoFromEntity ...
+func FragmentDtoFromEntity(e *entity.Fragment) *Fragment {
+	if e == nil {
+		return nil
+	}
+	return &Fragment{
+		ID:          e.ID,
+		NameRu:      e.NameRu,
+		NameNative:  e.NameNative,
+		AuthorRu:    e.AuthorRu,
+		Year:        e.Year,
+		Regions:     e.Regions,
+		TimePeriods: e.TimePeriods,
+		Description: e.Description,
+		Format:      int32(e.Format),
+	}
+}

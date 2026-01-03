@@ -8,6 +8,7 @@ import (
 	lib "github.com/AntonTyurin87/Recon_Com_protoc/gen/go/librarian"
 )
 
+// GetInfoForDownload - Отдаёт по ID источника ссылку для скачивания этого источника с диска
 func (s *Server) GetInfoForDownload(ctx context.Context, req *lib.GetInfoForDownloadRequest) (*lib.GetInfoForDownloadResponse, error) {
 	err := validateGetInfoForDownloadRequest(req)
 	if err != nil {
@@ -25,7 +26,6 @@ func (s *Server) GetInfoForDownload(ctx context.Context, req *lib.GetInfoForDown
 		return nil, fmt.Errorf("s.usacase.GetInfoForDownload: %w", err)
 	}
 
-	//TODO возможно тут отдавать через презентер
 	return &lib.GetInfoForDownloadResponse{
 		DownloadURL: info.GetURL(),
 		FileInfo: &lib.FileInfo{
@@ -37,7 +37,7 @@ func (s *Server) GetInfoForDownload(ctx context.Context, req *lib.GetInfoForDown
 
 func validateGetInfoForDownloadRequest(req *lib.GetInfoForDownloadRequest) error {
 	if req.GetSourceId() <= 0 {
-		return fmt.Errorf("sourceId shuld not 0")
+		return fmt.Errorf("sourceId shuld not be 0")
 	}
 	return nil
 }

@@ -13,7 +13,7 @@ const (
 	PhotosColumnRegions         = "regions"
 	PhotosColumnTimePeriods     = "time_periods"
 	PhotosColumnDescription     = "description"
-	PhotosColumnFileFormat      = "file_format"
+	PhotosColumnFormat          = "format"
 )
 
 // PhotosColumns ...
@@ -26,20 +26,20 @@ var PhotosColumns = []string{
 	PhotosColumnRegions,
 	PhotosColumnTimePeriods,
 	PhotosColumnDescription,
-	PhotosColumnFileFormat,
+	PhotosColumnFormat,
 }
 
 // Photo ...
 type Photo struct {
-	ID              int32  `db:"id"`
-	GroupID         int32  `db:"group_id"`
-	NameRu          string `db:"name_ru"`
-	NameNative      string `db:"name_native"`
-	FilmingLocation string `db:"filming_location"`
-	Regions         string `db:"regions"`
-	TimePeriods     string `db:"time_periods"`
-	Description     string `db:"description"`
-	FileFormat      string `db:"file_format"`
+	ID              int32    `db:"id"`
+	GroupID         int32    `db:"group_id"`
+	NameRu          string   `db:"name_ru"`
+	NameNative      string   `db:"name_native"`
+	FilmingLocation string   `db:"filming_location"`
+	Regions         []string `db:"regions"`
+	TimePeriods     []string `db:"time_periods"`
+	Description     string   `db:"description"`
+	Format          int32    `db:"format"`
 }
 
 // GetID возвращает ID фотографии
@@ -83,17 +83,17 @@ func (p *Photo) GetFilmingLocation() string {
 }
 
 // GetRegions возвращает регионы
-func (p *Photo) GetRegions() string {
+func (p *Photo) GetRegions() []string {
 	if p == nil {
-		return ""
+		return nil
 	}
 	return p.Regions
 }
 
 // GetTimePeriods возвращает временные периоды
-func (p *Photo) GetTimePeriods() string {
+func (p *Photo) GetTimePeriods() []string {
 	if p == nil {
-		return ""
+		return nil
 	}
 	return p.TimePeriods
 }
@@ -106,12 +106,9 @@ func (p *Photo) GetDescription() string {
 	return p.Description
 }
 
-// GetFileFormat возвращает формат файла
-func (p *Photo) GetFileFormat() string {
-	if p == nil {
-		return ""
-	}
-	return p.FileFormat
+// GetFormat возвращает формат файла
+func (p *Photo) GetFormat() int32 {
+	return p.Format
 }
 
 // Entity ...
@@ -129,7 +126,7 @@ func (p *Photo) Entity() *entity.Photo {
 		Regions:         p.GetRegions(),
 		TimePeriods:     p.GetTimePeriods(),
 		Description:     p.GetDescription(),
-		FileFormat:      p.GetFileFormat(),
+		Format:          entity.FileFormat(p.GetFormat()),
 	}
 }
 
@@ -138,3 +135,20 @@ type Photos []*Photo
 
 // Entity ...
 func (p Photos) Entity() []*entity.Photo { return ToEntitySlice[[]*entity.Photo](p) }
+
+func PhotoDtoFromEntity(e *entity.Photo) *Photo {
+	if e == nil {
+		return nil
+	}
+	return &Photo{
+		ID:              e.ID,
+		GroupID:         e.GroupID,
+		NameRu:          e.NameRu,
+		NameNative:      e.NameNative,
+		FilmingLocation: e.FilmingLocation,
+		Regions:         e.Regions,
+		TimePeriods:     e.TimePeriods,
+		Description:     e.Description,
+		Format:          int32(e.Format),
+	}
+}
