@@ -25,7 +25,6 @@ func (s *Server) UploadSourceDataForDownload(ctx context.Context, req *lib.Uploa
 			Year:        req.GetYear(),
 			Description: req.GetDescription(),
 			DownloadURL: req.GetDownloadUrl(),
-			//CreatedAt:   req.GetCreatedAt(), //TODO
 		},
 	})
 	if err != nil {
@@ -39,6 +38,21 @@ func (s *Server) UploadSourceDataForDownload(ctx context.Context, req *lib.Uploa
 }
 
 func validateUploadSourceDataForDownloadRequest(req *lib.UploadSourceDataForDownloadRequest) error {
-	//TODO написать проверку
+	if req.GetUserID() <= 0 {
+		return fmt.Errorf("validateUploadSourceDataForDownloadRequest: UserID is zero")
+	}
+	if req.GetNameRu() == "" {
+		return fmt.Errorf("validateUploadSourceDataForDownloadRequest: NameRu is zero")
+	}
+	if req.GetNameEng() == "" {
+		return fmt.Errorf("validateUploadSourceDataForDownloadRequest: NameEng is zero")
+	}
+	if req.GetYear() <= 0 {
+		return fmt.Errorf("validateUploadSourceDataForDownloadRequest: Year is zero")
+	}
+	if req.GetDownloadUrl() == "" {
+		return fmt.Errorf("validateUploadSourceDataForDownloadRequest: DownloadUrl is zero")
+	}
+
 	return nil
 }
