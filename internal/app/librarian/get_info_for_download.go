@@ -16,7 +16,7 @@ func (s *Server) GetInfoForDownload(ctx context.Context, req *lib.GetInfoForDown
 	}
 
 	info, err := s.usacase.GetInfoForDownload(ctx, &entity.GetInfoForDownloadRequest{
-		Sources: []*entity.Source{
+		Sources: []*entity.ForDownloadSource{
 			{
 				ID: req.GetSourceId(),
 			},

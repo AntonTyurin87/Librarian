@@ -2,5 +2,6 @@ package regions
 
 // Delete ...
 type Delete struct {
-	IDs []int
+	IDs     []int64
+	NamesRU []string
 }

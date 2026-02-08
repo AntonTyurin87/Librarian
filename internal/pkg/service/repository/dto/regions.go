@@ -1,44 +1,44 @@
 package dto
 
-import "Librarian/internal/pkg/domain/entity"
+import (
+	"Librarian/internal/pkg/domain/entity"
+)
 
-// Название колонок и таблицы
 const (
 	RegionsTableName = "regions"
 
 	RegionsColumnID          = "id"
-	RegionsColumnNameRu      = "name_ru"
+	RegionsColumnNameRU      = "name_ru"
 	RegionsColumnDescription = "description"
 )
 
-// RegionsColumns ...
 var RegionsColumns = []string{
 	RegionsColumnID,
-	RegionsColumnNameRu,
+	RegionsColumnNameRU,
 	RegionsColumnDescription,
 }
 
 // Region ...
 type Region struct {
-	ID          int32  `db:"id"`
-	NameRu      string `db:"name_ru"`
-	Description string `db:"description"`
+	ID          int64  `json:"id"`
+	NameRU      string `json:"name_ru"`
+	Description string `json:"description"`
 }
 
 // GetID ...
-func (r *Region) GetID() int32 {
+func (r *Region) GetID() int64 {
 	if r == nil {
 		return 0
 	}
 	return r.ID
 }
 
-// GetNameRu ...
-func (r *Region) GetNameRu() string {
+// GetNameRU ...
+func (r *Region) GetNameRU() string {
 	if r == nil {
 		return ""
 	}
-	return r.NameRu
+	return r.NameRU
 }
 
 // GetDescription ...
@@ -57,7 +57,7 @@ func (r *Region) Entity() *entity.Region {
 
 	return &entity.Region{
 		ID:          r.GetID(),
-		NameRu:      r.GetNameRu(),
+		NameRU:      r.GetNameRU(),
 		Description: r.GetDescription(),
 	}
 }
@@ -66,19 +66,18 @@ func (r *Region) Entity() *entity.Region {
 type Regions []*Region
 
 // Entity ...
-func (r Regions) Entity() []*entity.Region { return ToEntitySlice[[]*entity.Region](r) }
+func (r Regions) Entity() []*entity.Region {
+	return ToEntitySlice[[]*entity.Region](r)
+}
 
-/* TODO Возможно это не нужно
 // RegionDtoFromEntity ...
-func RegionDtoFromEntity(r *entity.Region) *Region {
-	if r == nil {
+func RegionDtoFromEntity(e *entity.Region) *Region {
+	if e == nil {
 		return nil
 	}
-
 	return &Region{
-		ID:          r.GetID(),
-		NameRu:      r.GetNameRu(),
-		Description: r.GetDescription(),
+		ID:          e.GetID(),
+		NameRU:      e.GetNameRU(),
+		Description: e.GetDescription(),
 	}
 }
-*/

@@ -2,38 +2,37 @@ package entity
 
 // GetAllRegionsResponse ...
 type GetAllRegionsResponse struct {
-	Regions []*Region
+	Regions []*Region `json:"regions"`
 }
 
-// GetRegions ...
-func (r *GetAllRegionsResponse) GetRegions() []*Region {
-	if r == nil {
+func (g *GetAllRegionsResponse) GetRegions() []*Region {
+	if g.Regions == nil {
 		return nil
 	}
-	return r.Regions
+	return g.Regions
 }
 
 // Region ...
 type Region struct {
-	ID          int32  `json:"id"`
-	NameRu      string `json:"name_ru"`
+	ID          int64  `json:"id"`
+	NameRU      string `json:"name_ru"`
 	Description string `json:"description"`
 }
 
 // GetID ...
-func (r *Region) GetID() int32 {
+func (r *Region) GetID() int64 {
 	if r == nil {
 		return 0
 	}
 	return r.ID
 }
 
-// GetNameRu ...
-func (r *Region) GetNameRu() string {
+// GetNameRU ...
+func (r *Region) GetNameRU() string {
 	if r == nil {
 		return ""
 	}
-	return r.NameRu
+	return r.NameRU
 }
 
 // GetDescription ...

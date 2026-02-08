@@ -8,7 +8,7 @@ import (
 )
 
 // GetAllRegions ...
-func (s *Server) GetAllRegions(ctx context.Context, in *lib.GetAllRegionsRequest) (*lib.GetAllRegionsResponse, error) {
+func (s *Server) GetAllRegions(ctx context.Context, _ *lib.GetAllRegionsRequest) (*lib.GetAllRegionsResponse, error) {
 	allRegions, err := s.usacase.GetAllRegions(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("s.usacase.GetAllRegions: %w", err)

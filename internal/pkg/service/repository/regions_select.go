@@ -13,14 +13,15 @@ import (
 // SelectRegions ...
 func (r *repository) SelectRegions(ctx context.Context, q regions.Select) ([]*entity.Region, error) {
 	var res dto.Regions
-	if err := Selectx(ctx, r.storage, &res, getSelectRegionsQuery(q)); err != nil {
-		return nil, fmt.Errorf("selectx(ctx, r.storage, &res, getSelectRegionsQuery(q)): %w", err)
+
+	if err := Selectx(ctx, r.storage, &res, selectRegionsQuery(q)); err != nil {
+		return nil, fmt.Errorf("selectx(ctx, r.storage, &res, selectRegionsQuery(q)): %w", err)
 	}
 
 	return res.Entity(), nil
 }
 
-func getSelectRegionsQuery(query regions.Select) sq.SelectBuilder {
+func selectRegionsQuery(query regions.Select) sq.SelectBuilder {
 	selectQuery := sq.StatementBuilder.Select(dto.RegionsColumns...).
 		From(dto.RegionsTableName).
 		Prefix("--SelectRegions\n")
@@ -30,15 +31,12 @@ func getSelectRegionsQuery(query regions.Select) sq.SelectBuilder {
 	if len(query.IDs) > 0 {
 		where[dto.RegionsColumnID] = query.IDs
 	}
-	if len(query.NamesRu) > 0 {
-		where[dto.RegionsColumnNameRu] = query.NamesRu
-	}
-	if len(query.Descriptions) > 0 {
-		where[dto.RegionsColumnDescription] = query.Descriptions
+	if len(query.NamesRU) > 0 {
+		where[dto.RegionsColumnNameRU] = query.NamesRU
 	}
 
 	selectQuery = selectQuery.Where(where)
-	selectQuery = selectQuery.OrderBy(dto.RegionsColumnNameRu)
+	selectQuery = selectQuery.OrderBy(dto.RegionsColumnID)
 
 	return selectQuery
 }

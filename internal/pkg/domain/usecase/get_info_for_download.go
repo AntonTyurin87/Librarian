@@ -9,7 +9,7 @@ import (
 // GetInfoForDownload ...
 func (u *usecase) GetInfoForDownload(ctx context.Context, req *entity.GetInfoForDownloadRequest) (*entity.GetInfoForDownloadResponse, error) {
 	// поход адресом файла
-	sourcesSelect := u.presenter.SourcesFromEntityToSourcies(req.GetSources())
+	sourcesSelect := u.presenter.SourcesFromEntityToSources(req.GetSources())
 
 	sources, err := u.repository.SelectSources(ctx, sourcesSelect)
 	if err != nil {

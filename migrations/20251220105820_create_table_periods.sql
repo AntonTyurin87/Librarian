@@ -2,7 +2,7 @@
 -- +goose StatementBegin
 CREATE TABLE IF NOT EXISTS periods (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    century TEXT NOT NULL,
+    century INTEGER NOT NULL,
     era TEXT NOT NULL,
     description TEXT
 );

@@ -18,7 +18,7 @@ func (p *presenter) RegionsFromEntityToLib(regionsEntity []*entity.Region) []*li
 	for _, region := range regionsEntity {
 		regionLib := &lib.Region{
 			Id:          region.GetID(),
-			NameRu:      region.GetNameRu(),
+			NameRu:      region.GetNameRU(),
 			Description: region.GetDescription(),
 		}
 		regions = append(regions, regionLib)

@@ -5,8 +5,10 @@ import (
 	"database/sql"
 	"fmt"
 	"reflect"
+	"strconv"
 	"strings"
 	"sync"
+	"unicode"
 
 	"github.com/Masterminds/squirrel"
 )
@@ -19,20 +21,6 @@ type Sqlizer interface {
 type toSQLFn func() (sqlStr string, args []interface{}, err error)
 
 func (fn toSQLFn) ToSql() (sqlStr string, args []interface{}, err error) { return fn() }
-
-//TODO подумать над необходимостью
-//// Exec ...
-//func Exec (
-//	ctx context.Context,
-//	e interface{
-//		Exec(ctx context.Context, sqlStr string, args ...interface{}) (sql.Result, error)
-//},
-//query string,
-//args ...interface{},
-//) (sql.Result, error) {
-//	cmd, err := e.Exec(ctx, query, args...)
-//	return cmd, err
-//}
 
 // Select упрощенная версия без mapToStruct
 func Select[TSlice ~[]*T, T any](
@@ -95,10 +83,19 @@ func ReplacePlaceholders(sqlizer Sqlizer) Sqlizer {
 
 // scanRowsToSlice сканирует строки в срез структур
 func scanRowsToSlice[TSlice ~[]*T, T any](rows *sql.Rows, dest *TSlice) error {
+	if rows == nil {
+		return fmt.Errorf("rows is nil")
+	}
+
 	// Получаем колонки
 	columns, err := rows.Columns()
 	if err != nil {
 		return fmt.Errorf("get columns failed: %w", err)
+	}
+
+	if len(columns) == 0 {
+		*dest = nil
+		return nil
 	}
 
 	// Кэш для информации о полях
@@ -119,10 +116,16 @@ func scanRowsToSlice[TSlice ~[]*T, T any](rows *sql.Rows, dest *TSlice) error {
 
 		// Создаем новую структуру
 		item := new(T)
+		if item == nil {
+			return fmt.Errorf("failed to create new instance of type %T", *new(T))
+		}
 
 		// Получаем или создаем маппинг полей для этого типа
 		var t T
 		structType := reflect.TypeOf(t)
+		if structType.Kind() != reflect.Struct {
+			return fmt.Errorf("type T must be a struct, got %v", structType.Kind())
+		}
 
 		// Пытаемся получить из кэша
 		cacheKey := structType.String()
@@ -136,7 +139,7 @@ func scanRowsToSlice[TSlice ~[]*T, T any](rows *sql.Rows, dest *TSlice) error {
 				columnMapping[i] = -1 // По умолчанию не найдено
 
 				// Ищем поле в структуре
-				colLower := strings.ToLower(col)
+				//colLower := strings.ToLower(col)
 				for j := 0; j < structType.NumField(); j++ {
 					field := structType.Field(j)
 					if !field.IsExported() {
@@ -154,7 +157,14 @@ func scanRowsToSlice[TSlice ~[]*T, T any](rows *sql.Rows, dest *TSlice) error {
 						}
 					}
 
-					if strings.ToLower(fieldName) == colLower {
+					// Сравниваем имя поля с именем колонки
+					if strings.EqualFold(fieldName, col) {
+						columnMapping[i] = j
+						break
+					}
+
+					// Пробуем преобразовать snake_case в CamelCase и наоборот
+					if matchFieldName(fieldName, col) {
 						columnMapping[i] = j
 						break
 					}
@@ -165,6 +175,10 @@ func scanRowsToSlice[TSlice ~[]*T, T any](rows *sql.Rows, dest *TSlice) error {
 
 		// Заполняем поля структуры
 		v := reflect.ValueOf(item).Elem()
+		if !v.IsValid() {
+			return fmt.Errorf("invalid value for item")
+		}
+
 		for i, fieldIndex := range columnMapping {
 			if fieldIndex == -1 {
 				continue // Поле не найдено
@@ -172,14 +186,21 @@ func scanRowsToSlice[TSlice ~[]*T, T any](rows *sql.Rows, dest *TSlice) error {
 
 			valPtr := scanArgs[i].(*interface{})
 			if valPtr == nil {
+				// NULL значение
 				continue
 			}
 
 			val := reflect.ValueOf(*valPtr)
 			if val.IsValid() {
 				field := v.Field(fieldIndex)
-				if field.CanSet() {
-					setFieldValue(field, val)
+				if field.IsValid() && field.CanSet() {
+					if err := safeSetFieldValue(field, val); err != nil {
+						// Логируем ошибку, но продолжаем обработку
+						fieldName := structType.Field(fieldIndex).Name
+						colName := columns[i]
+						fmt.Printf("Warning: failed to set field %s from column %s: %v\n",
+							fieldName, colName, err)
+					}
 				}
 			}
 		}
@@ -195,44 +216,294 @@ func scanRowsToSlice[TSlice ~[]*T, T any](rows *sql.Rows, dest *TSlice) error {
 	return nil
 }
 
-// setFieldValue устанавливает значение поля с простой конвертацией
-func setFieldValue(field reflect.Value, value reflect.Value) {
-	if !field.CanSet() || !value.IsValid() {
-		return
+// matchFieldName проверяет соответствие имени поля и колонки
+func matchFieldName(fieldName, columnName string) bool {
+	// Прямое сравнение без учета регистра
+	if strings.EqualFold(fieldName, columnName) {
+		return true
 	}
+
+	// Преобразование snake_case в CamelCase
+	snakeToCamel := snakeToCamel(columnName)
+	if strings.EqualFold(fieldName, snakeToCamel) {
+		return true
+	}
+
+	// Преобразование CamelCase в snake_case
+	camelToSnake := camelToSnake(fieldName)
+	if strings.EqualFold(camelToSnake, columnName) {
+		return true
+	}
+
+	return false
+}
+
+// snakeToCamel преобразует snake_case в CamelCase
+func snakeToCamel(s string) string {
+	parts := strings.Split(s, "_")
+	for i := range parts {
+		if len(parts[i]) > 0 {
+			parts[i] = strings.ToUpper(parts[i][:1]) + parts[i][1:]
+		}
+	}
+	return strings.Join(parts, "")
+}
+
+// camelToSnake преобразует CamelCase в snake_case
+func camelToSnake(s string) string {
+	var result []rune
+	for i, r := range s {
+		if i > 0 && unicode.IsUpper(r) {
+			result = append(result, '_')
+		}
+		result = append(result, unicode.ToLower(r))
+	}
+	return string(result)
+}
+
+// safeSetFieldValue безопасно устанавливает значение поля
+func safeSetFieldValue(field reflect.Value, value reflect.Value) error {
+	if !field.IsValid() {
+		return fmt.Errorf("field is not valid")
+	}
+
+	if !field.CanSet() {
+		return fmt.Errorf("field cannot be set")
+	}
+
+	if !value.IsValid() {
+		return fmt.Errorf("value is not valid")
+	}
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Panic recovered in safeSetFieldValue: %v\n", r)
+		}
+	}()
 
 	// Если типы совпадают
 	if value.Type().AssignableTo(field.Type()) {
 		field.Set(value)
-		return
+		return nil
 	}
 
-	// Простые конвертации
+	// Обработка указателей
+	if field.Kind() == reflect.Ptr {
+		elemType := field.Type().Elem()
+
+		// Создаем новый указатель
+		newPtr := reflect.New(elemType)
+
+		// Рекурсивно устанавливаем значение для элемента
+		if err := safeSetFieldValue(newPtr.Elem(), value); err != nil {
+			return err
+		}
+
+		field.Set(newPtr)
+		return nil
+	}
+
+	// Получаем фактическое значение
+	var rawValue interface{}
+	if value.Kind() == reflect.Interface {
+		rawValue = value.Interface()
+	} else {
+		rawValue = value.Interface()
+	}
+
+	// Конвертация в зависимости от типа поля
 	switch field.Kind() {
 	case reflect.String:
-		field.SetString(fmt.Sprint(value.Interface()))
+		field.SetString(fmt.Sprint(rawValue))
+
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		switch value.Kind() {
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			field.SetInt(value.Int())
-		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
-			field.SetInt(int64(value.Uint()))
-		case reflect.Float32, reflect.Float64:
-			field.SetInt(int64(value.Float()))
-		case reflect.String:
-			var intVal int64
-			fmt.Sscanf(value.String(), "%d", &intVal)
+		switch v := rawValue.(type) {
+		case int64:
+			field.SetInt(v)
+		case int32:
+			field.SetInt(int64(v))
+		case int16:
+			field.SetInt(int64(v))
+		case int8:
+			field.SetInt(int64(v))
+		case int:
+			field.SetInt(int64(v))
+		case uint64:
+			// Проверка на переполнение
+			if v > 1<<63-1 {
+				return fmt.Errorf("uint64 value %d overflows int64", v)
+			}
+			field.SetInt(int64(v))
+		case uint32:
+			field.SetInt(int64(v))
+		case uint16:
+			field.SetInt(int64(v))
+		case uint8:
+			field.SetInt(int64(v))
+		case uint:
+			field.SetInt(int64(v))
+		case float64:
+			// Проверка на потерю точности
+			if v < -1<<63 || v >= 1<<63 {
+				return fmt.Errorf("float64 value %f overflows int64", v)
+			}
+			field.SetInt(int64(v))
+		case float32:
+			field.SetInt(int64(v))
+		case []byte:
+			// Для []byte конвертируем в строку и парсим
+			strVal := strings.TrimSpace(string(v))
+			if strVal == "" {
+				field.SetInt(0)
+				return nil
+			}
+			intVal, err := strconv.ParseInt(strVal, 10, 64)
+			if err != nil {
+				return fmt.Errorf("cannot parse []byte '%s' to int64: %w", strVal, err)
+			}
 			field.SetInt(intVal)
+		case string:
+			// Убираем пробелы и пробуем распарсить
+			strVal := strings.TrimSpace(v)
+			if strVal == "" {
+				field.SetInt(0)
+				return nil
+			}
+			intVal, err := strconv.ParseInt(strVal, 10, 64)
+			if err != nil {
+				return fmt.Errorf("cannot parse string '%s' to int64: %w", strVal, err)
+			}
+			field.SetInt(intVal)
+		case bool:
+			if v {
+				field.SetInt(1)
+			} else {
+				field.SetInt(0)
+			}
+		case nil:
+			field.SetInt(0)
+		default:
+			return fmt.Errorf("cannot convert %T to int64", rawValue)
 		}
+
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+		switch v := rawValue.(type) {
+		case uint64:
+			field.SetUint(v)
+		case uint32:
+			field.SetUint(uint64(v))
+		case uint16:
+			field.SetUint(uint64(v))
+		case uint8:
+			field.SetUint(uint64(v))
+		case uint:
+			field.SetUint(uint64(v))
+		case int64:
+			if v < 0 {
+				return fmt.Errorf("negative int64 value %d cannot be converted to uint", v)
+			}
+			field.SetUint(uint64(v))
+		case int32:
+			if v < 0 {
+				return fmt.Errorf("negative int32 value %d cannot be converted to uint", v)
+			}
+			field.SetUint(uint64(v))
+		case int16:
+			if v < 0 {
+				return fmt.Errorf("negative int16 value %d cannot be converted to uint", v)
+			}
+			field.SetUint(uint64(v))
+		case int8:
+			if v < 0 {
+				return fmt.Errorf("negative int8 value %d cannot be converted to uint", v)
+			}
+			field.SetUint(uint64(v))
+		case int:
+			if v < 0 {
+				return fmt.Errorf("negative int value %d cannot be converted to uint", v)
+			}
+			field.SetUint(uint64(v))
+		case []byte:
+			strVal := strings.TrimSpace(string(v))
+			if strVal == "" {
+				field.SetUint(0)
+				return nil
+			}
+			uintVal, err := strconv.ParseUint(strVal, 10, 64)
+			if err != nil {
+				return fmt.Errorf("cannot parse []byte '%s' to uint64: %w", strVal, err)
+			}
+			field.SetUint(uintVal)
+		case string:
+			strVal := strings.TrimSpace(v)
+			if strVal == "" {
+				field.SetUint(0)
+				return nil
+			}
+			uintVal, err := strconv.ParseUint(strVal, 10, 64)
+			if err != nil {
+				return fmt.Errorf("cannot parse string '%s' to uint64: %w", strVal, err)
+			}
+			field.SetUint(uintVal)
+		case nil:
+			field.SetUint(0)
+		default:
+			return fmt.Errorf("cannot convert %T to uint64", rawValue)
+		}
+
 	case reflect.Bool:
-		switch value.Kind() {
-		case reflect.Bool:
-			field.SetBool(value.Bool())
-		case reflect.String:
-			str := strings.ToLower(value.String())
-			field.SetBool(str == "true" || str == "1" || str == "t")
-		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-			field.SetBool(value.Int() != 0)
+		switch v := rawValue.(type) {
+		case bool:
+			field.SetBool(v)
+		case int64:
+			field.SetBool(v != 0)
+		case int32:
+			field.SetBool(v != 0)
+		case int16:
+			field.SetBool(v != 0)
+		case int8:
+			field.SetBool(v != 0)
+		case int:
+			field.SetBool(v != 0)
+		case uint64:
+			field.SetBool(v != 0)
+		case uint32:
+			field.SetBool(v != 0)
+		case uint16:
+			field.SetBool(v != 0)
+		case uint8:
+			field.SetBool(v != 0)
+		case uint:
+			field.SetBool(v != 0)
+		case []byte:
+			strVal := strings.ToLower(strings.TrimSpace(string(v)))
+			field.SetBool(strVal == "true" || strVal == "1" || strVal == "t" ||
+				strVal == "yes" || strVal == "y" || strVal == "on")
+		case string:
+			strVal := strings.ToLower(strings.TrimSpace(v))
+			field.SetBool(strVal == "true" || strVal == "1" || strVal == "t" ||
+				strVal == "yes" || strVal == "y" || strVal == "on")
+		case nil:
+			field.SetBool(false)
+		default:
+			return fmt.Errorf("cannot convert %T to bool", rawValue)
 		}
+
+	default:
+		// Для других типов пробуем просто установить
+		if value.Type().ConvertibleTo(field.Type()) {
+			field.Set(value.Convert(field.Type()))
+		} else {
+			return fmt.Errorf("unsupported field type: %v", field.Kind())
+		}
+	}
+
+	return nil
+}
+
+// Старая функция для обратной совместимости
+func setFieldValue(field reflect.Value, value reflect.Value) {
+	if err := safeSetFieldValue(field, value); err != nil {
+		// Тихий сбой для обратной совместимости
 	}
 }

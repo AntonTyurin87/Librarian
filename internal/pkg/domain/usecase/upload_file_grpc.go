@@ -2,12 +2,11 @@ package usecase
 
 import (
 	"Librarian/internal/pkg/domain/entity"
-	"Librarian/internal/pkg/service/files_worker"
 	"Librarian/internal/pkg/service/repository/query/articles"
 	"Librarian/internal/pkg/service/repository/query/books"
+	"Librarian/internal/pkg/service/repository/query/for_download_sources"
 	"Librarian/internal/pkg/service/repository/query/fragments"
 	"Librarian/internal/pkg/service/repository/query/photos"
-	"Librarian/internal/pkg/service/repository/query/sources"
 	"Librarian/internal/pkg/service/yandex"
 	"context"
 	"fmt"
@@ -32,7 +31,7 @@ func (u *usecase) UploadFile(ctx context.Context, req *entity.UploadFileRequest)
 	}
 
 	// Сохраняем данных в БД источника
-	_, err = u.repository.InsertSource(ctx, sources.Insert{
+	_, err = u.repository.InsertSource(ctx, for_download_sources.Insert{
 		Sources: []*entity.Source{
 			{
 				Type:         req.GetFileSourceData().GetSourceType(),
@@ -109,7 +108,7 @@ func (u *usecase) saveSource(ctx context.Context, req *entity.UploadFileRequest)
 }
 
 func (u *usecase) getYandexFileName(fileAddress string, sourceType entity.SourceType) string {
-	fileName := strings.TrimPrefix(fileAddress, files_worker.FilesFolder)
+	fileName := strings.TrimPrefix(fileAddress, "files_worker.FilesFolder") //TODO тут должна быть папка для файла
 
 	var fileFolder string
 
