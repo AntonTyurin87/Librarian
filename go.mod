@@ -3,7 +3,7 @@ module Librarian
 go 1.25.1
 
 require (
-	github.com/AntonTyurin87/Recon_Com_protoc v0.1.26
+	github.com/AntonTyurin87/Recon_Com_protoc v0.1.27
 	github.com/Masterminds/squirrel v1.5.4
 	google.golang.org/grpc v1.78.0
 	modernc.org/sqlite v1.44.3

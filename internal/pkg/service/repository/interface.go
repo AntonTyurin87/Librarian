@@ -12,6 +12,7 @@ type Repository interface {
 	InsertForDownloadSources(ctx context.Context, q for_download_sources.Insert) (*entity.ForDownloadSource, error)
 
 	InsertTextSources(ctx context.Context, q text_sources.Insert) (*entity.TextSource, error)
+	SelectTextSources(ctx context.Context, q text_sources.Select) ([]*entity.TextSource, error)
 
 	SelectRegions(ctx context.Context, q regions.Select) ([]*entity.Region, error)
 }

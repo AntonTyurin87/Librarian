@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS text_sources (
     file_name TEXT,
     file_format TEXT,
     created_at TEXT,
-    isAvailable BOOL NOT NULL
+    is_available BOOL NOT NULL
 );
 
 -- Индексы для оптимизации работы с регионами
