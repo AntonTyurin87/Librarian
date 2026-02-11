@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net"
@@ -14,6 +15,7 @@ import (
 	"Librarian/internal/pkg/domain/presenter"
 	"Librarian/internal/pkg/domain/usecase"
 	"Librarian/internal/pkg/service/repository"
+	"Librarian/internal/pkg/service/scheduler"
 	"Librarian/internal/pkg/service/storage"
 	"Librarian/internal/pkg/service/yandex"
 
@@ -22,16 +24,12 @@ import (
 
 // TODO сделать нормальную обработку ошибок
 func main() {
+	ctx := context.Background()
+
 	//Получение яндекс клиента
-	//yandex.YandexClient = yandex.NewYandexDiskClient(os.Getenv("YANDEX_TOKEN"))
 	yandexClient := yandex.NewYandexDiskClient(os.Getenv("YANDEX_TOKEN"))
 	fmt.Println("Яндекс клиент получен")
 
-	//// Получи файл базы данных яндекс диска
-	//yandex.GetLibrarianDB(yandex.YandexClient)
-	//fmt.Println("Яндекс клиент получен")
-	//
-	// Подключились к БД указателей на источники яндекс диска
 	db, err := storage.InitDB()
 	if err != nil {
 		fmt.Println("Подключиться к БД указателей с яндекс диска не удалось - ", err)
@@ -49,6 +47,11 @@ func main() {
 		presenterImpl,
 		usacase,
 	)
+
+	// собираем сервис фоновых задач по расписанию
+	schedule := scheduler.NewScheduler(presenterImpl, usacase)
+
+	schedule.DownloadSourceFile(ctx, 1*time.Minute) //TODO заменить на константу или глобальную переменную
 
 	// gRPC сервис подключаем
 	lis, err := net.Listen("tcp", os.Getenv("LIBRARIAN_PORT"))
